@@ -1,82 +1,70 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState} from "react";
+import "../App.css";
+import Modal from "./Modal";
+import SearchBar from "./SearchBar";
+import Pagination from "./Pagination";
+import ApiCaller from "./ApiCaller";
 
 const StockInfo = () => {
-  const [itemNames, setItemNames] = useState([]);
+  const [itemNames, setItemNames] = useState([]); //API로부터 받은 주식 정보를 저장
+  const [noItem, setnoItem] = useState(false); //검색창 확인
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [name, setName] = useState("");
+  const [name, setName] = useState(""); //검색할 주식 이름을 저장
+  const [searchName, setSearchName] = useState("");
+  const [currentPage, setCurrentPage] = useState(1); //현재 페이지
+  const [totalPages, setTotalPages] = useState(0); //전체 페이지
+  const [modalOpen, setModalOpen] = useState(false); //
+  const [modalPost, setModalPost] = useState(null);
 
-  const url = 'https://apis.data.go.kr/1160100/service/GetStockSecuritiesInfoService/getStockPriceInfo';
-  const key = process.env.REACT_APP_API_KEY;
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(url, {
-        params: {
-          serviceKey: key,
-          numOfRows: 1,
-          resultType: 'json',
-          itmsNm: name
-        }
-      });
-      const items = response.data.response.body?.items?.item;
-      if (!items) {
-        console.log('No items found');
-        setItemNames([]);
-      } else {
-        const itemNames = items.map(item => ({
-          종목명: item.itmsNm,
-          시가: item.clpr,
-          거래량: item.trqu,
-          시가총액: item.mkp,
-          기준일자: item.basDt
-        }));
-        setItemNames(itemNames);
-      }
-      setLoading(false);
-    } catch (error) {
-      setError(error);
-      setLoading(false);
-    }
-  };
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    fetchData();
-  };
-
-  const handleNameChange = (event) => {
-    setName(event.target.value);
-  };
+  
 
   return (
     <div>
       <h1>Stock Information</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={name}
-          onChange={handleNameChange}
-          placeholder="종목명"
-        />
-        <button type="submit">Submit</button>
-      </form>
-      {loading && <div>Loading...</div>}
-      {error && <div>Error occurred: {error.message}</div>}
-      <ul>
-        {itemNames.map((item, index) => (
-          <li key={index}>
-            <h2>{item.종목명}</h2>
-            <p>시가: {item.시가}</p>
-            <p>거래량: {item.거래량}</p>
-            <p>시가총액: {item.시가총액}</p>
-            <p>기준일자: {item.기준일자}</p>
-          </li>
-        ))}
-      </ul>
+
+      <SearchBar
+        name={name}
+        setCurrentPage={setCurrentPage}
+        setName={setName}
+        setModalOpen={setModalOpen}
+        setSearchName={setSearchName}
+        searchName={searchName}
+      />
+
+      <ApiCaller
+        setLoading={setLoading}
+        setError={setError}
+        setnoItem={setnoItem}
+        searchName={searchName}
+        currentPage={currentPage}
+        setTotalPages={setTotalPages}
+        setItemNames={setItemNames}
+        noItem={noItem}
+        loading={loading}
+        error={error}
+      />
+
+      <Modal
+      modalOpen={modalOpen}
+      modalPost={modalPost}
+      setModalOpen={setModalOpen}
+      setModalPost={setModalPost}
+      itemNames={itemNames}
+      />
+
+      
+
+      <Pagination
+        totalPages={totalPages}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        setModalOpen={setModalOpen}
+      />
     </div>
   );
 };
+
+
 
 export default StockInfo;

@@ -1,5 +1,5 @@
-import React from 'react';
-import StockInfo from './components/StockInfo';
+import React from "react";
+import StockInfo from "./components/StockInfo";
 
 const App = () => {
   return (
